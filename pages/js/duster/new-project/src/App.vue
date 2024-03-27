@@ -51,6 +51,7 @@
                   :clinical-date-options="clinicalDateOptions"
                   :rp-dates="rpDates"
                   v-model:collection-windows="collectionWindows"
+                  :initial-windows="initialDesign.collectionWindows"
               />
             </div>
           </div>
@@ -59,12 +60,21 @@
               <Toast />
               <Toolbar class="col">
                 <template #start>
-                  <Button label="Back to REDCap New Project Page" icon="pi pi-cross" severity="secondary" class="ml-2" @click="exitFromDuster($event)"/>
+                  <Button
+                    :label="projectConfig.edit_mode ? 'Back to REDCap Project' : 'Back to REDCap New Project Page'"
+                    icon="pi pi-cross" severity="secondary"
+                    class="ml-2"
+                    @click="exitFromDuster($event)"
+                  />
                 </template>
                 <template #end>
-                  <Button type="submit" label="Review & Create Project" icon="pi pi-check"
-                          class="ml-2"
-                          @click="checkValidation"/>
+                  <Button
+                    type="submit"
+                    :label="projectConfig.edit_mode ? 'Review & Update Project' : 'Review & Create Project'"
+                    icon="pi pi-check"
+                    class="ml-2"
+                    @click="checkValidation"
+                  />
                 </template>
               </Toolbar>
             </div>
@@ -74,12 +84,13 @@
         <div :style="(showSummary) ?  '': 'display: none !important'">
           <ReviewPanel
               v-model:show-summary="showSummary"
+              :dev="dev"
+              :rp-data="rpData"
               :rp-identifiers="rpIdentifiers"
               :rp-dates="rpDates"
               :demographics="demographicsSelects"
               :collection-windows="collectionWindows"
               :project-info="projectConfig"
-              :dev="dev"
               @delete-auto-save="deleteAutoSaveDesign()"
           />
         </div>
@@ -136,25 +147,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch, provide } from 'vue'
-import SystemErrorDialog from '@shared/components/SystemErrorDialog.vue'
+import { computed, ref, onMounted, watch, provide } from 'vue';
+import SystemErrorDialog from '@shared/components/SystemErrorDialog.vue';
 import { useConfirm } from "primevue/useconfirm";
 
-import axios from 'axios'
+import axios from 'axios';
 import type FieldMetadata from "@/types/FieldMetadata";
 import type {BasicConfig} from "@/types/FieldConfig";
 import type CollectionWindow from "@/types/CollectionWindow";
 import type DusterMetadata from "@/types/DusterMetadata";
 
 import ResearcherProvidedPanel from "@/components/ResearcherProvidedPanel.vue";
-import DemographicsPanel from '@/components/DemographicsPanel.vue'
-import CollectionWindowsPanel from '@/components/CollectionWindowsPanel.vue'
-import ReviewPanel from '@/components/ReviewPanel.vue'
+import DemographicsPanel from '@/components/DemographicsPanel.vue';
+import CollectionWindowsPanel from '@/components/CollectionWindowsPanel.vue';
+import ReviewPanel from '@/components/ReviewPanel.vue';
 
 // for testing
 import resp from './dusterTestMetadata.json';
 import {useToast} from "primevue/usetoast";
-import Toast from 'primevue/toast'
+import Toast from 'primevue/toast';
 import {useVuelidate} from "@vuelidate/core";
 
 const projectConfig = JSON.parse(localStorage.getItem('postObj') || '{}');
@@ -166,20 +177,22 @@ setInterval(() => {
     })
     .catch(function (error) {
     });
-  saveDatasetDesign('auto-save');
+  if (projectConfig.edit_mode === false) {
+    saveDatasetDesign('auto-save');
+  }
 },60000);
 
-const dev = ref<boolean>(false)
-const systemError = ref<boolean>(false)
+const dev = ref<boolean>(false);
+const systemError = ref<boolean>(false);
 
-const showSummary = ref<boolean>(false)
+const showSummary = ref<boolean>(false);
 
 const rpData = ref<BasicConfig[]>([
   {
     redcap_field_name: "mrn",
     label:"Medical Record Number (MRN)",
     redcap_field_type:"text",
-    value_type:"Identifier", // this needs to be replace by "text" in review step
+    value_type:"Identifier", // this needs to be replaced by "text" in review step
     redcap_field_note:"8-digit number (including leading zeros, e.g., '01234567')",
     phi:"t",
     id: "mrn",
@@ -193,22 +206,22 @@ const rpData = ref<BasicConfig[]>([
     phi: "t",
     id: "enroll_date",
     duster_field_name: undefined
-  }])
+  }]);
 
 // separating out identifiers and dates for review step
 const rpIdentifiers = computed(() => {
   return rpData.value.filter((rpi:BasicConfig) => rpi.value_type?.toLowerCase() === 'identifier')
-})
+});
 const rpDates = computed(() => {
   return rpData.value.filter((rpi:BasicConfig) => rpi.value_type?.toLowerCase() !== 'identifier')
-})
+});
 
-const demographicsOptions = ref<FieldMetadata[]>([])
-const labOptions = ref<FieldMetadata[]>([])
-const vitalOptions = ref<FieldMetadata[]>([])
-const outcomeOptions = ref<FieldMetadata[]>([])
-const scoreOptions = ref<FieldMetadata[]>([])
-const clinicalDateOptions = ref<FieldMetadata[]>([])
+const demographicsOptions = ref<FieldMetadata[]>([]);
+const labOptions = ref<FieldMetadata[]>([]);
+const vitalOptions = ref<FieldMetadata[]>([]);
+const outcomeOptions = ref<FieldMetadata[]>([]);
+const scoreOptions = ref<FieldMetadata[]>([]);
+const clinicalDateOptions = ref<FieldMetadata[]>([]);
 
 const metadataArr = computed<Array<FieldMetadata>>(() => {
   let arr:FieldMetadata[] = [];
@@ -220,8 +233,8 @@ const metadataArr = computed<Array<FieldMetadata>>(() => {
 });
 provide('metadata', metadataArr);
 
-const demographicsSelects = ref<FieldMetadata[]>([])
-const collectionWindows = ref<CollectionWindow[]>([])
+const demographicsSelects = ref<FieldMetadata[]>([]);
+const collectionWindows = ref<CollectionWindow[]>([]);
 
 const projectIrb = ref<string>(projectConfig.project_irb_number)
 const irbOrDpaStr = (irbOrDpa: string) => {
@@ -236,13 +249,19 @@ const irbCheckVisible = ref<boolean>(false)
 // const autoSaveDesign = ref<object>();
 // const autoSaveDesign: {[key: string]:any, [demographicsSelects: string]:any, [collectionWindows: string]:any} = {}; // = ref<object>();
 const autoSaveDesign: {[key: string]:any} = ({}); // = ref<object>();
+const initialDesign: {[key: string]:any} = ({
+  rpData: [],
+  demographicsSelects: [],
+  collectionWindows: []
+});
+
 // const myObj: {[index: string]:any} = {}
 
 const promptRestoreAutoSave = ref<boolean>(false);
 
 onMounted(() => {
   // check irb
-  checkIrb(projectConfig.check_irb_url, projectConfig.redcap_csrf_token, projectConfig.project_irb_number, projectConfig.redcap_user)
+  checkIrb(projectConfig.check_irb_url, projectConfig.redcap_csrf_token, projectConfig.project_irb_number, projectConfig.redcap_user);
 })
 
 const irbWarningConfirmed = ref<boolean>(false)
@@ -412,7 +431,7 @@ const checkIrb = (checkIrbUrl:string, redcapCsrfToken: string, projectIrbNumber:
         });
   } else {
     irbCheckMessage.value =
-        "You must have an IRB or DPA to use Duster. Please enter a valid IRB or DPA. (DPAs must start with \"DPA-\")";
+        "You must have an IRB or DPA to use DUSTER. Please enter a valid IRB or DPA. (DPAs must start with \"DPA-\")";
     irbValid.value = false
     irbCheckStatus.value = 'checked'
     irbCheckVisible.value = true
@@ -420,24 +439,25 @@ const checkIrb = (checkIrbUrl:string, redcapCsrfToken: string, projectIrbNumber:
 }
 
 const irbRetry = () => {
-  irbCheckStatus.value = "retry"
-  irbCheckMessage.value = "Checking " + irbOrDpaStr(projectIrb.value) + " ..."
+  irbCheckStatus.value = "retry";
+  irbCheckMessage.value = "Checking " + irbOrDpaStr(projectIrb.value) + " ...";
   checkIrb(projectConfig.check_irb_url,
       projectConfig.redcap_csrf_token, projectIrb.value,
-      projectConfig.redcap_user)
-}
+      projectConfig.redcap_user);
+};
 
 const irbCheckCancel = () => {
-  irbCheckVisible.value = false
+  irbCheckVisible.value = false;
   // return to project create page for invalid IRBs
   if (!irbValid.value || !irbWarningConfirmed.value) {
     window.location.href = projectConfig.redcap_new_project_url;
   }
-}
+};
 
 const getDusterMetadata = (metadataUrl:string) => {
   if (dev.value) {
-    demographicsOptions.value = resp.data.demographics;
+    demographicsOptions.value = sortDemographics(resp.data.demographics);
+    demographicsOptions.value = demographicsOptions.value.map((demographic) => ({...demographic, edit:true}));
     labOptions.value = resp.data.labs;
     vitalOptions.value = resp.data.vitals;
     outcomeOptions.value = resp.data.outcomes;
@@ -446,7 +466,7 @@ const getDusterMetadata = (metadataUrl:string) => {
   } else {
     axios.get(metadataUrl)
       .then(function (response) {
-        demographicsOptions.value = response.data.demographics;
+        demographicsOptions.value = sortDemographics(response.data.demographics);
         labOptions.value = response.data.labs;
         vitalOptions.value = response.data.vitals;
         outcomeOptions.value = response.data.outcomes;
@@ -459,9 +479,11 @@ const getDusterMetadata = (metadataUrl:string) => {
           .then(function (response) {
             const designs = response.data;
             // prompt to restore auto-save
-            if (designs.hasOwnProperty('auto-save') === true) {
+            if (projectConfig.edit_mode === false && designs.hasOwnProperty('auto-save') === true) {
               autoSaveDesign.value = JSON.parse(designs['auto-save']);
               promptRestoreAutoSave.value = true;
+            } else if (projectConfig.edit_mode === true) {
+              loadEditMode();
             }
           })
           .catch(function (error) {
@@ -469,10 +491,35 @@ const getDusterMetadata = (metadataUrl:string) => {
           });
       }).catch(function (error) {
         irbCheckMessage.value = "Unable to load DUSTER metadata";
-        systemError.value = true ;
+        systemError.value = true;
     });
   }
-}
+};
+
+const loadEditMode = () => {
+  initialDesign.value = JSON.parse(projectConfig.initial_design);
+  initialDesign.collectionWindows = initialDesign.value.collectionWindows;
+  initialDesign.value = JSON.parse(projectConfig.initial_design);
+  // transform and load researcher-provided data
+  rpData.value = initialDesign.value.rpData;
+  rpData.value.forEach((rp:any) => {
+    rp.edit = false;
+  });
+
+  // load demographics
+  let initialDemographicsSelects = initialDesign.value.demographicsSelects.map((selected:any) => selected.duster_field_name);
+  if (Array.isArray(demographicsOptions.value)) {
+    demographicsOptions.value.forEach(demographic => {
+      if (initialDemographicsSelects.includes(demographic.duster_field_name)) {
+        demographic.edit = false;
+        demographicsSelects.value.push(demographic);
+      }
+    });
+  }
+
+  // load data collection windows
+  collectionWindows.value = initialDesign.value.collectionWindows;
+};
 
 const checkForRpDateChanges = () => {
   collectionWindows.value.forEach(cw => {
@@ -497,11 +544,8 @@ const checkForRpDateChanges = () => {
       }
     }
   })
-}
+};
 
-/*const deleteRpDate = (rpDate:BasicConfig) => {
-  rpData.value = rpData.value.filter(item => item.id !== rpDate.id)
-}*/
 const toast = useToast();
 
 // tracks all redcap field names to ensure uniqueness
@@ -525,9 +569,9 @@ const exitFromDuster = (event: any) => {
       window.history.go(-1) ;
     }
   });
-}
+};
 
-const v$ = useVuelidate()
+const v$ = useVuelidate();
 
 const checkValidation = () => {
   checkForRpDateChanges()
@@ -538,39 +582,43 @@ const checkValidation = () => {
     showSummary.value = true;
 
     // auto-save dataset design
-    saveDatasetDesign('auto-save');
+    if (projectConfig.edit_mode === false) {
+      saveDatasetDesign('auto-save');
+    }
   } else {
     //console.log(v$)
     v$.value.$errors.forEach(error => {
-          if (typeof error.$message === 'object') {
-            // @ts-ignore
-            error.$message.forEach(msgs =>
-                msgs.forEach((msg: string) =>
-                    toast.add({
-                      severity: 'error',
-                      summary: 'Error', detail: msg,
-                      life: 3000
-                    })
-                )
-            )
-          } else {
+      if (typeof error.$message === 'object') {
+        // @ts-ignore
+        error.$message.forEach(msgs => {
+          msgs.forEach((msg: string) => {
             toast.add({
               severity: 'error',
-              summary: 'Error', detail: error.$message,
+              summary: 'Error',
+              detail: msg,
               life: 3000
-            })
-          }
-        }
-    )
+            });
+          });
+        });
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.$message,
+          life: 3000
+        })
+      }
+    });
   }
   return false;
-}
+};
 
 /**
  * Saves current dataset design in STARR-API
  * @param title
+ * @param pid
  */
-const saveDatasetDesign = (title:string) => {
+const saveDatasetDesign = (title: string) => {
   let saveDesignForm = new FormData();
   saveDesignForm.append('redcap_csrf_token', projectConfig.redcap_csrf_token);
   saveDesignForm.append('title', title);
@@ -609,7 +657,7 @@ const deleteAutoSaveDesign = () => {
  * Deletes a dataset design in STARR-API
  * @param title
  */
-const deleteDatasetDesign = (title:string) => {
+const deleteDatasetDesign = (title: string) => {
   let deleteDesignForm = new FormData();
   deleteDesignForm.append('redcap_csrf_token', projectConfig.redcap_csrf_token);
   deleteDesignForm.append('title', title);
@@ -620,6 +668,38 @@ const deleteDatasetDesign = (title:string) => {
     .catch(function (error) {
 
     });
+}
+
+/**
+ * sort demographics metadata by subcategories and alphabetical order
+ * @param demographics
+ */
+const sortDemographics = (demographics:any) => {
+  let sorted:any[] = JSON.parse(JSON.stringify(demographics));
+
+  // sort name and date options together
+  sorted.forEach(option => {
+    if (option.label.toLowerCase().indexOf("date") > -1) {
+      option['group'] = 1
+    } else if (option.label.toLowerCase().indexOf("name") > -1) {
+      option['group'] = 2
+    } else {
+      option['group'] = 3
+    }
+  })
+
+  // sort group, then alphabetically by label
+  sorted.sort(function (a: any, b: any) {
+    let x = a.label.toLowerCase()
+    let y = b.label.toLowerCase()
+    if (a.group < b.group) return -1
+    if (a.group > b.group) return 1
+    if (x < y) return -1;
+    if (x > y) return 1;
+    return 0;
+  });
+
+  return sorted;
 }
 
 </script>

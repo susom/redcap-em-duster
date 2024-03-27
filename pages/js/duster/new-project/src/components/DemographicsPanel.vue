@@ -8,21 +8,31 @@
       </div>
 
       <div class="formgrid grid">
-
-          <div v-for="field in sorted" :key="field.duster_field_name"
-               class="my-2 col-6">
+          <div
+            v-for="field in demographicsOptions"
+            :key="field.duster_field_name"
+            class="my-2 col-6"
+          >
             <div>
-              <Checkbox v-model="selected"
-                        :input-id="field.duster_field_name"
-                        :value="field"
+              <Checkbox
+                v-model="selected"
+                :input-id="field.duster_field_name"
+                :value="field"
+                :disabled="field.edit === false"
               />
-              <label :for="field.duster_field_name" class="ml-2">{{ field.label }}</label></div>
-
+              <label
+                :for="field.duster_field_name"
+                class="ml-2"
+              >
+                {{ field.label }}
+              </label>
+            </div>
           </div>
       </div>
       <div class="formgrid grid">
         <div class="col-offset-6 col-6">
         <Button
+          v-if="canEditAll()"
           :label="selectButtonLabel"
           size="small"
           @click="selectAll()" />
@@ -36,7 +46,6 @@
     </Panel>
   </div>
 </template>
-
 
 <script setup lang="ts">
 import {computed} from "vue"
@@ -64,35 +73,6 @@ const selected = computed({
   }
 })
 
-const sorted = computed(()=>{
-  if (props.demographicsOptions) {
-    let toSort:any[] = JSON.parse(JSON.stringify(props.demographicsOptions))
-    // sort name and date options together
-    toSort.forEach(option => {
-      if (option.label.toLowerCase().indexOf("date") > -1) {
-        option['group'] = 1
-      } else if (option.label.toLowerCase().indexOf("name") > -1) {
-        option['group'] = 2
-      } else {
-        option['group'] = 3
-      }
-    })
-
-    // sort group, then alphabetically by label
-    toSort.sort(function (a: any, b: any) {
-      let x = a.label.toLowerCase()
-      let y = b.label.toLowerCase()
-      if (a.group < b.group) return -1
-      if (a.group > b.group) return 1
-      if (x < y) return -1;
-      if (x > y) return 1;
-      return 0;
-    });
-    return toSort
-  }
-  return props.demographicsOptions
-});
-
 const selectButtonLabel = computed(()=> {
     return (selected.value.length < props.demographicsOptions.length)
         ? "Select All"
@@ -102,11 +82,20 @@ const selectButtonLabel = computed(()=> {
 const selectAll = () => {
   // selectButtonLabel is computed after this invoked so can't use it here.
   if (selected.value.length < props.demographicsOptions.length) {
-    selected.value = [...sorted.value]
+    selected.value = [...props.demographicsOptions]
   } else {
     selected.value.length = 0
   }
+}
 
+
+const canEditAll = () => {
+  for (const demographic of props.demographicsSelects) {
+    if (demographic.edit === false) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /*const selectAll = ref<Boolean>(false)
@@ -123,10 +112,7 @@ watch(selectAll, (newSelectAll: any) => {
   }
 })*/
 
-
-
 </script>
 
 <style scoped>
-
 </style>

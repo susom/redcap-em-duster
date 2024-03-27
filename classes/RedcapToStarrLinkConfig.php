@@ -46,34 +46,44 @@ class RedcapToStarrLinkConfig
     return true;
   }
 
+  /**
+   * TODO remove project settings for REDCap to STARR Link EM
+   */
+  public function removeRedcapToStarrLinkEmSettings() {
+    $em_id = $this->getEmId();
+    $this->module->query('DELETE FROM redcap_external_module_settings 
+       WHERE `external_module_id` = ? AND `project_id` = ? AND `key` != "enabled"',
+    [$em_id, $this->project_id]);
+  }
+
     /*takes JsonObject returned from starr-api to configure project level RtoS Link EM settings*/
-    public function configureRedcapToStarrLink($em_config) {
-        // there's no api for this so just saving settings directly to database
-        $data_sync_settings = $em_config['rcToStarrLinkConfig']['dataSync'];
-        //$this->module->emDebug('data_sync_settings: ' . print_r($data_sync_settings, true));
+  public function configureRedcapToStarrLink($em_config) {
+      // there's no api for this so just saving settings directly to database
+      $data_sync_settings = $em_config['rcToStarrLinkConfig']['dataSync'];
+      //$this->module->emDebug('data_sync_settings: ' . print_r($data_sync_settings, true));
 
-        foreach ($data_sync_settings as $key=>$setting) {
-            $this->saveSetting($key, $this->transformSetting($key, $setting));
-        }
+      foreach ($data_sync_settings as $key=>$setting) {
+          $this->saveSetting($key, $this->transformSetting($key, $setting));
+      }
 
-        // these settings are for the data queries
-        $data_queries = $em_config['rcToStarrLinkConfig']['queries'];
-        //$this->module->emDebug("data queries: ".print_r($data_queries, true));
+      // these settings are for the data queries
+      $data_queries = $em_config['rcToStarrLinkConfig']['queries'];
+      //$this->module->emDebug("data queries: ".print_r($data_queries, true));
 
-        $query_settings = [];
-        foreach($data_queries as $data_query) {
-            foreach($data_query as $key=>$data_query_setting) {
-                if (!$query_settings[$key]) {
-                    $query_settings[$key] = [];
-                }
-                array_push($query_settings[$key], $this->transformSetting($key, $data_query_setting));
-            }
-        }
+      $query_settings = [];
+      foreach($data_queries as $data_query) {
+          foreach($data_query as $key=>$data_query_setting) {
+              if (!$query_settings[$key]) {
+                  $query_settings[$key] = [];
+              }
+              array_push($query_settings[$key], $this->transformSetting($key, $data_query_setting));
+          }
+      }
 
-        foreach($query_settings as $key=>$data_query_setting) {
-            $this->saveSetting($key, implode(',',$data_query_setting));
-        }
-    }
+      foreach($query_settings as $key=>$data_query_setting) {
+          $this->saveSetting($key, implode(',',$data_query_setting));
+      }
+  }
 
     /*constructs the url to call RtoStarr Link api
     @return "1" if successful*/

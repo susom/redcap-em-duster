@@ -257,6 +257,28 @@ class Duster extends \ExternalModules\AbstractExternalModule {
   }
 
   /**
+   * Fetch a project's IRB number
+   * @param String $pid
+   * @return mixed
+   * @throws Exception
+   */
+  public function getProjectIrb(String $pid) {
+    $sql = 'SELECT project_irb_number FROM redcap_projects WHERE project_id = ?';
+    $query = $this->createQuery();
+    $query->add($sql, [$pid]);
+    $sql_result = $query->execute();
+    $num_results = $query->affected_rows;
+    if ($num_results === 1) {
+      $irb = $sql_result->fetch_assoc()['project_irb_number'];
+      return $irb;
+    } else {
+      $this->handleError("ERROR: Unable to retrieve this project's IRB number.", "Returned $num_results in " .
+        __METHOD__ . " from pid '$pid'");
+      throw new Exception ("Returned $num_results in " . __METHOD__ . " from pid '$pid'");
+    }
+  }
+
+  /**
    * Fetch user information from corresponding REDCap API token
    * @param String $token
    * @return String $project_id

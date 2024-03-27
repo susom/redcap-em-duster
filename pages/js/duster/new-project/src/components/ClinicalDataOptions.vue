@@ -1,66 +1,106 @@
 <template>
 
   <div class="grid">
-    <div v-for="(col, index) in filtered" :key="index" class="col mr-3">
+    <div
+      v-for="(col, index) in filtered"
+      :key="index"
+      class="col mr-3"
+    >
         <div class="flex justify-content-between flex-wrap">
           <div class="mb-2"><strong>Selections</strong></div>
-          <div v-if="hasAggregates" class="mb-2 mr-3"><strong>Aggregates</strong></div>
+          <div
+            v-if="hasAggregates"
+            class="mb-2 mr-3"
+          >
+            <strong>Aggregates</strong>
+          </div>
         </div>
-      <div v-for="field in col" :key="field.duster_field_name"
-           :style="(field.visible) ? '' : hide"
-           class="my-2 flex justify-content-between flex-wrap">
+      <div
+        v-for="field in col"
+        :key="field.duster_field_name"
+        :style="(field.visible) ? '' : hide"
+        class="my-2 flex justify-content-between flex-wrap"
+      >
         <div>
-          <Checkbox v-model="selected"
-                    :name="category"
-                    :input-id="field.duster_field_name"
-                    :value="field"
+          <Checkbox
+            v-model="selected"
+            :name="category"
+            :input-id="field.duster_field_name"
+            :value="field"
+            :disabled="noEditField(field.duster_field_name)"
           />
-          <label :for="field.duster_field_name" class="ml-2">{{ field.label }}</label>
+          <label
+            :for="field.duster_field_name"
+            class="ml-2"
+          >
+            {{ field.label }}
+          </label>
           <MetadataInfoDialog :initial-field-name-prop="field.duster_field_name"/>
         </div>
         <div
-            v-if="hasAggregates" class="mr-3">
+          v-if="hasAggregates"
+          class="mr-3"
+        >
           <span
-              v-if="field.selected" class="text-sm">
+            v-if="field.selected"
+            class="text-sm"
+          >
             <span
-                v-if="!field.aggregate_type ||
-                field.aggregate_type === 'default'">
+              v-if="!field.aggregate_type || field.aggregate_type === 'default'"
+            >
               default aggregates
             </span>
-            <Chip v-else
-                  v-for="aggr in field.aggregates" :label="aggr.text" :key="aggr.text" class="text-sm pt-0 pb-0 mr-1" style="height:1.5em"/>
+            <Chip
+              v-else
+              v-for="aggr in field.aggregates"
+              :label="aggr.text"
+              :key="aggr.text"
+              class="text-sm pt-0 pb-0 mr-1"
+              style="height:1.5em"
+            />
           </span>
-          <Button icon="pi pi-cog" outlined text class="ml-2"
-                style="height:1.3em"
-                v-if="field.selected"
-                @click="showAggregatesDialog(field)" v-tooltip.top="'Edit Aggregates'"/>
+          <Button
+            icon="pi pi-cog"
+            outlined
+            text
+            class="ml-2"
+            style="height:1.3em"
+            v-if="field.selected && !noEditField(field.duster_field_name)"
+            @click="showAggregatesDialog(field)"
+            v-tooltip.top="'Edit Aggregates'"
+          />
         </div>
       </div>
     </div>
   </div>
   <Dialog
-      :visible="aggregatesDialogVisible"
-      header="Aggregates"
-      @update:visible="cancelAggregates"
+    :visible="aggregatesDialogVisible"
+    header="Aggregates"
+    @update:visible="cancelAggregates"
   >
     <div class="flex flex-wrap gap-3 my-3">
       <div class="flex align-items-center">
-        <RadioButton v-model="currentField.aggregate_type"
-                     input-id="defaultAggregates"
-                     name="defaultCustom"
-                     value="default"
-                     autofocus
-                     @change="customAggregatesVisible=false"
+        <RadioButton
+          v-model="currentField.aggregate_type"
+          input-id="defaultAggregates"
+          name="defaultCustom"
+          value="default"
+          autofocus
+          @change="customAggregatesVisible=false"
         />
-        <label for="defaultAggregates" class="ml-2">
+        <label
+          for="defaultAggregates"
+          class="ml-2"
+        >
           Default Aggregates</label>
       </div>
       <div class="flex align-items-center">
-        <RadioButton v-model="currentField.aggregate_type"
-                     input-id="customAggregates"
-                     name="defaultCustom"
-                     value="custom"
-                     @change="customAggregatesVisible=true"
+        <RadioButton
+          v-model="currentField.aggregate_type"
+          input-id="customAggregates"
+          name="defaultCustom"
+          value="custom"
+          @change="customAggregatesVisible=true"
         />
 
         <label for="customAggregates" class="ml-2">
@@ -71,27 +111,28 @@
       <div class="card flex flex-wrap gap-4 mt-3">
         <div v-for="(option) in filteredAggregates" :key="option.value" class="flex align-items-center">
           <Checkbox
-              name="aggregateOptions"
-              v-model="currentField.aggregates"
-              :input-id="option.value + '_custom'"
-              :value="option"
-              :class="{ 'p-invalid': aggOptionErrorMessage }"
-              @click="aggOptionErrorMessage=false"
+            name="aggregateOptions"
+            v-model="currentField.aggregates"
+            :input-id="option.value + '_custom'"
+            :value="option"
+            :class="{ 'p-invalid': aggOptionErrorMessage }"
+            @click="aggOptionErrorMessage=false"
           />
           <label :for="option.value + '_custom'" class="ml-2">{{ option.text }}</label>
         </div>
         <!-- closest time-->
         <div v-if="hasClosestTime" class="flex align-items-center">
           <Checkbox
-              v-model="currentField.aggregates"
-              name="aggregateOptions"
-              :input-id="closestTimeOption.value + '_custom'"
-              :value="closestTimeOption"
-              :class="{ 'p-invalid': aggOptionErrorMessage }"
+            v-model="currentField.aggregates"
+            name="aggregateOptions"
+            :input-id="closestTimeOption.value + '_custom'"
+            :value="closestTimeOption"
+            :class="{ 'p-invalid': aggOptionErrorMessage }"
           />
           <label
-              :for="closestTimeOption.value + '_custom'"
-              class="ml-2 mr-2">
+            :for="closestTimeOption.value + '_custom'"
+            class="ml-2 mr-2"
+          >
             Closest to Time {{ closestTime ?? "Undefined" }}
           </label>
           <!--div
@@ -105,16 +146,21 @@
           </div-->
         </div>
         <!-- closest event -->
-        <div v-if="hasClosestEvent"
-             class="flex align-items-center">
+        <div
+          v-if="hasClosestEvent"
+          class="flex align-items-center"
+        >
           <Checkbox
-              v-model="currentField.aggregates"
-              name="aggregateOptions"
-              :input-id="closestEventOption.value + '_custom'"
-              :value="closestEventOption"
-              :class="{ 'p-invalid': aggOptionErrorMessage }"
+            v-model="currentField.aggregates"
+            name="aggregateOptions"
+            :input-id="closestEventOption.value + '_custom'"
+            :value="closestEventOption"
+            :class="{ 'p-invalid': aggOptionErrorMessage }"
           />
-          <label :for="closestEventOption.value + '_custom'" class="ml-2 mr-2">
+          <label
+            :for="closestEventOption.value + '_custom'"
+            class="ml-2 mr-2"
+          >
             Closest to {{ ((closestEvent ?? "").length) ? closestEvent : "Event - Undefined" }}
           </label>
           <!--Dropdown v-model="localClosestEvent"
@@ -131,9 +177,10 @@
         </div>
       </div>
       <small
-          v-if="aggOptionErrorMessage"
-          id="aggOption-help"
-          class="flex p-error mb-3">
+        v-if="aggOptionErrorMessage"
+        id="aggOption-help"
+        class="flex p-error mb-3"
+      >
         {{ aggOptionErrorMessage }}
       </small>
     </div>
@@ -156,6 +203,9 @@ const props = defineProps({
   selectedOptions: {
     type: Object as PropType<Array<FieldMetadata>>,
     required: true
+  },
+  initialData: {
+    type: Object
   },
   category: {
     type: String,
@@ -196,6 +246,23 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selectedOptions'])
+
+const initialSelected = computed(() => {
+  return (props.initialData !== undefined && Array.isArray(props.initialData[props.category]))
+    ? props.initialData[props.category] : [];
+});
+
+/*
+TODO delete this
+const initialSelected = computed(() => {
+  if (props.initialData !== undefined) {
+    if (Array.isArray(props.initialData[props.category])) {
+      return props.initialData[props.category];
+    }
+  }
+  return [];
+});
+*/
 
 const selected = computed({
   get() {
@@ -253,6 +320,14 @@ const sorted = computed<FieldMetadata[][]>(() => {
   }
   return []
 });
+
+const noEditField = (fieldName: string) => {
+  if (Array.isArray(initialSelected.value)) {
+    const dusterFields = initialSelected.value.map((field: any) => field.duster_field_name);
+    return dusterFields.includes(fieldName);
+  }
+  return false;
+}
 
 // returns true if option should be visible based on search input
 const filterBySearch = (option: FieldMetadata) => {

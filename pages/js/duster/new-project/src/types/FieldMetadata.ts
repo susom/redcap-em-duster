@@ -25,6 +25,7 @@ interface FieldMetadata {
     related?: string
     mdcalc?: string
     pubmed?: string
+    edit?: boolean
 }
 
 export type AGGREGATE_TYPE = "default" | "custom"

@@ -1,9 +1,10 @@
 <template>
-  <Dialog v-model:visible="visible"
-          :modal="true"
-          :style="{ width: '75vw' }"
-          header="Data Collection Timing"
-          class="my-2"
+  <Dialog
+    v-model:visible="visible"
+    :modal="true"
+    :style="{ width: '75vw' }"
+    header="Data Collection Timing"
+    class="my-2"
   >
     <div class="field grid mt-2">
       <label class="col-2" for="presets">Presets:

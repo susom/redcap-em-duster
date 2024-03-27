@@ -11,103 +11,120 @@
       </span>
     </template>
     <div class="col-12">
-    <DataTable
-            :value="localRpData"
-            class="p-datatable-sm"
-            data-key="id">
-          <Column
-              key="value_type"
-              field="value_type"
-              header="Type">
-            <template #body="slotProps">
-              <div
-                   v-if="localRpData[slotProps.index].value_type != 'Identifier'">
+      <DataTable
+        :value="localRpData"
+        class="p-datatable-sm"
+        data-key="id"
+      >
+        <Column
+            key="value_type"
+            field="value_type"
+            header="Type"
+        >
+          <template #body="slotProps">
+            <div
+              v-if="localRpData[slotProps.index].value_type != 'Identifier'"
+            >
               <Dropdown
-                  v-model="slotProps.data[slotProps.field]"
-                    :options="dateTypes"
-                    :class="['w-full md:w-8rem',{'p-invalid':rpFieldInvalid('value_type', slotProps.index)}]"
-                    optionLabel="text"
-                    optionValue="dtValue"
-                    placeholder="Select a type">
-                </Dropdown>
-                <small v-if="rpFieldInvalid('value_type', slotProps.index)"
-                       class="flex p-error mb-3">
-                  {{ v$.rpData.$each.$response.$errors[slotProps.index].value_type[0].$message }}
-                </small>
-              </div>
-              <span v-else>{{slotProps.data.value_type}}</span>
-            </template>
-          </Column>
-          <Column
-              key="label"
-              field="label"
-              header="Label">
-            <template
-                #body="slotProps">
-              <div
-                v-if="localRpData[slotProps.index].value_type != 'Identifier'">
-                <InputText
-                  v-model="slotProps.data[slotProps.field]"
-                  :class="['w-full', {'p-invalid': rpFieldInvalid('label', slotProps.index)}]">
-              </InputText>
-              <small v-if="rpFieldInvalid('label', slotProps.index)"
-                     class="flex p-error mb-3">
-                {{ v$.rpData.$each.$response.$errors[slotProps.index].label[0].$message }}
-              </small>
-              </div>
-              <span v-else>{{slotProps.data.label}}</span>
-            </template>
-          </Column>
-          <Column
-              key="redcap_field_name"
-              field="redcap_field_name"
-              header="REDCap Field Name"
+                v-model="slotProps.data[slotProps.field]"
+                :options="dateTypes"
+                :class="['w-full md:w-8rem',{'p-invalid':rpFieldInvalid('value_type', slotProps.index)}]"
+                optionLabel="text"
+                optionValue="dtValue"
+                placeholder="Select a type"
+                :disabled="rpData[slotProps.index].edit === false"
               >
-            <template
-                #body="slotProps">
-              <div
-                   v-if="localRpData[slotProps.index].value_type != 'Identifier'">
+              </Dropdown>
+              <small
+                v-if="rpFieldInvalid('value_type', slotProps.index)"
+                class="flex p-error mb-3"
+              >
+                {{ v$.rpData.$each.$response.$errors[slotProps.index].value_type[0].$message }}
+              </small>
+            </div>
+            <span v-else>{{slotProps.data.value_type}}</span>
+          </template>
+        </Column>
+        <Column
+          key="label"
+          field="label"
+          header="Label"
+        >
+          <template
+              #body="slotProps">
+            <div
+              v-if="localRpData[slotProps.index].value_type != 'Identifier'">
               <InputText
-                    v-model="slotProps.data[slotProps.field]"
-                    :class="['w-full', {'p-invalid': rpFieldInvalid('redcap_field_name', slotProps.index)}]">
-                </InputText>
-                <small v-if="rpFieldInvalid('redcap_field_name', slotProps.index)"
-                       class="flex p-error mb-3">
-                  {{ v$.rpData.$each.$response.$errors[slotProps.index].redcap_field_name[0].$message }}
-                </small>
-              </div>
-              <span v-else>{{slotProps.data.redcap_field_name}}</span>
-            </template>
-          </Column>
-          <Column
-              :exportable="false"
-              header="Actions"
-              :class="['w-6rem']">
-            <template
-                #body="slotProps">
-              <Button
-                  icon="pi pi-trash"
-                  outlined
-                  rounded
-                  size="small"
-                  severity="danger"
-                  :class="(slotProps.index < 2)? 'hidden' : 'mr-2'"
-                  @click="confirmDeleteRpDate(slotProps.data)" />
-              <Button
-                  icon="pi pi-plus"
-                  outlined
-                  rounded
-                  size="small"
-                  severity="success"
-                  :class="((slotProps.index == (localRpData.length -1)) && slotProps.index < 5  )? '': 'hidden'"
-                  @click="addRpDate" >
-              </Button>
+                v-model="slotProps.data[slotProps.field]"
+                :class="['w-full', {'p-invalid': rpFieldInvalid('label', slotProps.index)}]"
+                :disabled="rpData[slotProps.index].edit === false"
+              >
+            </InputText>
+            <small v-if="rpFieldInvalid('label', slotProps.index)"
+                   class="flex p-error mb-3">
+              {{ v$.rpData.$each.$response.$errors[slotProps.index].label[0].$message }}
+            </small>
+            </div>
+            <span v-else>{{slotProps.data.label}}</span>
+          </template>
+        </Column>
+        <Column
+            key="redcap_field_name"
+            field="redcap_field_name"
+            header="REDCap Field Name"
+            >
+          <template
+              #body="slotProps">
+            <div
+                 v-if="localRpData[slotProps.index].value_type != 'Identifier'">
+              <InputText
+                v-model="slotProps.data[slotProps.field]"
+                :class="['w-full', {'p-invalid': rpFieldInvalid('redcap_field_name', slotProps.index)}]"
+                :disabled="rpData[slotProps.index].edit === false"
+              >
+              </InputText>
+              <small
+                v-if="rpFieldInvalid('redcap_field_name', slotProps.index)"
+                class="flex p-error mb-3"
+              >
+              {{ v$.rpData.$each.$response.$errors[slotProps.index].redcap_field_name[0].$message }}
+              </small>
+            </div>
+            <span v-else>{{slotProps.data.redcap_field_name}}</span>
+          </template>
+        </Column>
+        <Column
+          :exportable="false"
+          header="Actions"
+          :class="['w-6rem']">
+          <template
+            #body="slotProps"
+          >
+            <Button
+              icon="pi pi-trash"
+              outlined
+              rounded
+              size="small"
+              severity="danger"
+              :class="(slotProps.index < 2 || rpData[slotProps.index].edit === false)? 'hidden' : 'mr-2'"
+              @click="confirmDeleteRpDate(slotProps.data)"
+              :disabled="rpData[slotProps.index].edit === false"
+            />
+            <Button
+              icon="pi pi-plus"
+              outlined
+              rounded
+              size="small"
+              severity="success"
+              :class="((slotProps.index == (localRpData.length -1)) && slotProps.index < 5  )? '': 'hidden'"
+              @click="addRpDate"
+            >
+            </Button>
+          </template>
+        </Column>
+      </DataTable>
 
-            </template>
-          </Column>
-        </DataTable>
-
-      </div>
+    </div>
   </Panel>
   <Dialog
       v-model:visible="deleteRpDateDialog"
@@ -172,10 +189,11 @@ const props = defineProps({
       type: Array as PropType<string[]>,
       required:true
     }
-})
+});
+
 const emit = defineEmits(
     ['update:rpData']
-)
+);
 
 const dateTypes = ref([
   {text: 'Date', dtValue: 'date'},
@@ -201,7 +219,10 @@ const rpDate = ref<BasicConfig>(newRpDate())
 
 const addRpDate = () => {
   rpDate.value = newRpDate()
+  rpDate.value.redcap_field_type = 'text';
+  rpDate.value.phi = 't';
   rpDate.value.id = (rpDate.value.redcap_field_name || "") + new Date().getTime()
+  console.log(rpDate.value);
 
   if (localRpData.value)
     localRpData.value.push(rpDate.value)

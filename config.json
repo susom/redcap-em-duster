@@ -31,6 +31,13 @@
 				"icon": "fas fa-receipt",
 				"url": "pages/populateData.php",
 				"show-header-and-footer": true
+			},
+			{
+				"name": "DUSTER: Edit Project",
+				"key": "dustereditproject",
+				"icon": "fas fa-pen-to-square",
+				"url": "pages/editProject.php",
+				"show-header-and-footer": true
 			}
 		],
 		"control-center": [

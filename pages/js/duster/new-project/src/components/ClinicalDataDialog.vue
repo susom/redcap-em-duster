@@ -1,9 +1,10 @@
 <template>
-    <Dialog v-model:visible="visible"
-            :modal="true"
-            :close-on-escape="false"
-            :style="{ width: '75vw' }"
-            header="Select Clinical Values"
+    <Dialog
+      v-model:visible="visible"
+      :modal="true"
+      :close-on-escape="false"
+      :style="{ width: '75vw' }"
+      header="Select Clinical Values"
     >
 
       <!-- add search -->
@@ -11,9 +12,10 @@
         <div class="col-6 mt-2">
           <div class="p-inputgroup flex">
             <InputText
-                placeholder="Search Clinical Value"
-                v-model="filters['global'].value"
-                @update:model-value="expandAll"/>
+              placeholder="Search Clinical Value"
+              v-model="filters['global'].value"
+              @update:model-value="expandAll"
+            />
             <span class="p-inputgroup-addon"><i class="pi pi-search"/></span>
           </div>
         </div>
@@ -58,7 +60,10 @@
       </div>
       <hr/>
       <!-- default aggregates-->
-      <Panel header="Default Aggregates" toggleable>
+      <Panel
+        header="Default Aggregates"
+        toggleable
+      >
           <div>
             <p>
               Clinical variables that are added and require aggregation (i.e., any clinical variables under the category of "Labs" or "Vitals") will default to the settings here for convenience.
@@ -71,37 +76,53 @@
           <div class="card flex flex-wrap gap-4 mt-3">
               <div v-for="(option) in filteredAggregates" :key="option.value" class="flex align-items-center">
                   <Checkbox
-                      name="defaultAggregate"
-                      v-model="localAggregateDefaults"
-                      :value="option"
-                      :input-id="option.value"
-                      :class="['mr-2', { 'p-invalid': v$.aggregateDefaults.$error }]"
+                    name="defaultAggregate"
+                    v-model="localAggregateDefaults"
+                    :value="option"
+                    :input-id="option.value"
+                    :class="['mr-2', { 'p-invalid': v$.aggregateDefaults.$error }]"
+                    :disabled="initialAggregates.includes(option.value)"
                   />
-                  <label :for="option.value">{{ option.text }}</label>
+                  <label
+                    :for="option.value"
+                  >
+                    {{ option.text }}
+                  </label>
               </div>
               <!-- closest time-->
-              <div v-if="hasClosestTime" class="flex align-items-center">
-                  <Checkbox v-model="localAggregateDefaults"
-                              name="defaultAggregate"
-                              :input-id="closestTimeOption.value"
-                              :value="closestTimeOption"
-                              :class="{ 'p-invalid': v$.aggregateDefaults.$error }"
+              <div
+                v-if="hasClosestTime"
+                class="flex align-items-center"
+              >
+                <Checkbox
+                  v-model="localAggregateDefaults"
+                  name="defaultAggregate"
+                  :input-id="closestTimeOption.value"
+                  :value="closestTimeOption"
+                  :class="{ 'p-invalid': v$.aggregateDefaults.$error }"
+                  :disabled="initialAggregates.includes(closestTimeOption.value)"
+                />
+                <label
+                  :for="closestTimeOption.value"
+                  class="ml-2 mr-2"
+                >
+                  {{ closestTimeOption.text }}
+                </label>
+                <div v-if="showClosestTime">
+                  <Calendar
+                    id="calendar-timeonly"
+                    v-model="closestCalendarTime"
+                    timeOnly
+                    v-tooltip="'Closest Time value applies to both default and custom aggregates'"
+                    :disabled="initialContainsClosest"
                   />
-                  <label :for="closestTimeOption.value" class="ml-2 mr-2"
-                         >
-                    {{ closestTimeOption.text }}
-                  </label>
-                  <div v-if="showClosestTime">
-                      <Calendar id="calendar-timeonly"
-                                v-model="closestCalendarTime"
-                                timeOnly
-                                v-tooltip="'Closest Time value applies to both default and custom aggregates'"
-                      />
-                          <small v-if="v$.closestTime.$error"
-                              class="flex p-error mb-3">
-                              {{ v$.closestTime.$errors[0].$message }}
-                          </small>
-                  </div>
+                  <small
+                    v-if="v$.closestTime.$error"
+                    class="flex p-error mb-3"
+                  >
+                      {{ v$.closestTime.$errors[0].$message }}
+                  </small>
+                </div>
               </div>
               <!-- closest event -->
               <div v-if="hasClosestEvent" class="flex align-items-center">
@@ -110,6 +131,7 @@
                       :input-id="closestEventOption.value"
                       :value="closestEventOption"
                       :class="{ 'p-invalid': v$.aggregateDefaults.$error }"
+                      :disabled="initialAggregates.includes(closestEventOption.value)"
                   />
                   <label :for="closestEventOption.value" class="ml-2 mr-2"
                          >
@@ -124,6 +146,7 @@
                       placeholder="Choose an event"
                       v-if="showClosestEvent"
                       :class="[{ 'p-invalid': v$.closestEvent.$error }]"
+                      :disabled="initialContainsClosest"
                       />
                     </span>
                       <small v-if="v$.closestEvent.$error"
@@ -145,6 +168,7 @@
         <ClinicalDataOptions
             category="labs"
             :options="labOptions"
+            :initial-data="initialData"
             :has-aggregates=true
             :has-closest-time="hasClosestTime"
             :has-closest-event="hasClosestEvent"
@@ -159,6 +183,7 @@
         <ClinicalDataOptions
             category="vitals"
             :options="vitalOptions"
+            :initial-data="initialData"
             :has-aggregates=true
             :has-closest-time="hasClosestTime"
             :has-closest-event="hasClosestEvent"
@@ -173,6 +198,7 @@
         <ClinicalDataOptions
             category="outcomes"
             :options="outcomeOptions"
+            :initial-data="initialData"
             :has-aggregates=false
             :has-closest-time=false
             :has-closest-event=false
@@ -185,6 +211,7 @@
         <ClinicalDataOptions
             category="scores"
             :options="scoreOptions"
+            :initial-data="initialData"
             :has-aggregates=false
             :has-closest-time=false
             :has-closest-event=false
@@ -207,6 +234,7 @@ import {computed, ref, watch, watchEffect} from "vue";
 import type {PropType} from "vue";
 import {FilterMatchMode} from "primevue/api";
 import {AGGREGATE_OPTIONS} from "@/types/FieldConfig";
+import type CollectionWindow from "@/types/CollectionWindow";
 import type FieldMetadata from "@/types/FieldMetadata";
 import type FieldConfig from "@/types/FieldConfig";
 import type TimingConfig from "@/types/TimingConfig";
@@ -221,6 +249,10 @@ import {useVuelidate} from "@vuelidate/core";
 const props = defineProps({
   showClinicalDataDialog: Boolean,
   activeOptions: Array as PropType<Array<number>>,
+  initialWindow: {
+    type: Object as PropType<CollectionWindow>,
+    required: false
+  },
   timing: {
     type: Object,
     required: true
@@ -306,6 +338,39 @@ const localAggregateDefaults = computed({
   set(value:(Array<TextValuePair>|undefined)){
     emit('update:aggregateDefaults', value)
   }
+});
+
+const initialAggregates = computed(() => {
+  if (props.initialWindow?.aggregate_defaults !== undefined) {
+    return props.initialWindow?.aggregate_defaults.map(agg => agg.value);
+  }
+  return [];
+});
+
+const initialData = computed(() => {
+  return props.initialWindow?.data !== undefined
+    ? props.initialWindow?.data : {};
+});
+
+// TODO test this works
+const initialContainsClosest = computed(() => {
+  if (initialAggregates.value.includes('closest_time') || initialAggregates.value.includes('closest_event')) {
+    return true;
+  }
+  let dataArr:any[] = [];
+  if (initialData.value.hasOwnProperty('labs')) {
+    dataArr.concat((initialData.value as any).labs);
+  }
+  if (initialData.value.hasOwnProperty('vitals')) {
+    dataArr.concat((initialData.value as any).vitals);
+  }
+  dataArr.forEach((clinicalVar:any) => {
+    const aggs = clinicalVar.aggregates.map((agg:any) => agg.value);
+    if (aggs.includes('closest_time') || initialAggregates.value.includes('closest_event')) {
+      return true;
+    }
+  });
+  return false;
 });
 
 // remove the "closest to" options to display them on a separate line

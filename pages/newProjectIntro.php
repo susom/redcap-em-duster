@@ -14,6 +14,7 @@ namespace Stanford\Duster;
   localStorage.removeItem('postObj');
   let postObj = {};
   postObj['redcap_csrf_token'] = "<?php echo $module->getCSRFToken(); ?>";
+  postObj['edit_mode'] = false;
   // form data initially entered by user on initial create new project page (/index.php?action=create)
   postObj['surveys_enabled'] = "<?php echo htmlentities($_POST["surveys_enabled"], ENT_QUOTES); ?>";
   postObj['repeatforms'] = "<?php echo htmlentities($_POST["repeatforms"], ENT_QUOTES); ?>";

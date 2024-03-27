@@ -2,142 +2,194 @@
   <Panel>
     <template #header>
       <span class="p-panel-title">Data Collection Windows
-        <Button icon="pi pi-info-circle"
-                text rounded
-                aria-label="Info"
-                class="ml-2 pt-0 pb-0 mt-0 mb-0"
-                style="height:1.3em"
-                @click="showDataCollectionInfo = true"/>
-
+        <Button
+          icon="pi pi-info-circle"
+          text rounded
+          aria-label="Info"
+          class="ml-2 pt-0 pb-0 mt-0 mb-0"
+          style="height:1.3em"
+          @click="showDataCollectionInfo = true"
+        />
         </span>
     </template>
-      <DataTable
-          editMode="row"
-          class="p-datatable-sm"
-          :value="localCollectionWindows"
-          dataKey="id"
-  >
-    <Column  key="timing_config" header="Timing" style="width: 5%">
-      <template #body="{ data }">
-        <Button icon="pi pi-pencil" class="ml-2 p-1" size="small"
-                :severity="(!v$.$dirty || data.timing_valid) ? 'primary':'danger'"
-            @click="showTiming(data)" v-tooltip.top="'Configure Timing'"/>
-      </template>
-    </Column>
-    <Column  key="timing_display"
-             header="Period"
-             style="width: 20%">
-      <template #body="{ data }">
-        <div v-if="data['timing']['start']['label']"
-             :class="{'p-invalid': !data['timing_valid']}"
-        >
-          <strong>From: </strong>{{ data['timing']['start']['label'] }}<br>
-          <strong>To: </strong>{{ data['timing']['end']['label'] }}<br>
-            <span v-if="data['timing']['repeat_interval']
-            && data['timing']['repeat_interval']['label']">
-              <strong>Repeat:</strong> {{
-                data['timing']['repeat_interval']['label'] }}</span>
-        </div>
-        <div v-else>
-            &lt;Not configured yet&gt;
-        </div>
-      </template>
-    </Column>
-    <Column  key="label" field="label" header="Label" style="width: 25%">
-      <template #body="slotProps">
-        <div>
-          <InputText
-            v-model="slotProps.data[slotProps.field]"
-            :class="['p-inputtext-sm', 'w-11',{'p-invalid': labelInvalid(slotProps.index)}]"
-            @change="v$.value.$reset()"
-            >
-          </InputText>
-          <small v-if="labelInvalid(slotProps.index)"
-                 class="flex p-error mb-3">
-            {{ v$.localCollectionWindows.$each.$response.$errors[slotProps.index].label[0].$message }}
-          </small>
-        </div>
-      </template>
-    </Column>
-
-    <Column key="data" field="data" header="Clinical Data" style="width: 40%">
-      <template #body="slotProps">
-
-        <Button @click="showClinicalData('labs', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded
-        :severity="(v$.$dirty && !slotProps.data[slotProps.field].valid) ? 'danger':'primary'">
-            Labs<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].labs.length }}</Badge>
-        </Button>
-        <Button @click="showClinicalData('vitals', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded :severity="(v$.$dirty && !slotProps.data[slotProps.field].valid) ? 'danger':'primary'">
-            Vitals<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].vitals.length }}</Badge>
-        </Button>
-        <Button @click="showClinicalData('outcomes', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded>
-            Outcomes<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].outcomes.length }}</Badge>
-        </Button>
-        <Button @click="showClinicalData('scores', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded>
-            Scores<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].scores.length }}</Badge>
-        </Button>
-        <small v-if="(v$.$dirty && !slotProps.data[slotProps.field].valid)"
-               class="flex p-error mb-3">
-          {{ slotProps.data[slotProps.field].errors[0].$message }}
-
-        </small>
-      </template>
-    </Column>
-        <Column  key="id" field="id" header="Actions" style="width: 10%">
-          <template #body="{ data, field }">
-            <Button icon="pi pi-copy" outlined rounded severity="success" class="ml-2 p-1 small-icon" size="small"
-                    @click="duplicateCw(data[field])" v-tooltip.top="'Duplicate Data Collection Window'"/>
-            <Button icon="pi pi-trash" outlined rounded severity="danger" class="ml-2 p-1 small-icon" size="small"
-            @click="deleteCw(data[field])" v-tooltip.top="'Delete Data Collection Window'"/>
-          </template>
-        </Column>
-        <template #footer>
-          <div class="text-right">
-            <Button label="Add Data Collection Window"
-                    icon="pi pi-plus"
-                    severity="success"
-                    class="mr-2"
-                    @click="addNew" />
+    <DataTable
+        editMode="row"
+        class="p-datatable-sm"
+        :value="localCollectionWindows"
+        dataKey="id"
+    >
+      <Column
+          key="timing_config"
+          header="Timing"
+          style="width: 5%"
+      >
+        <template #body="{ data }">
+          <Button
+              icon="pi pi-pencil"
+              class="ml-2 p-1"
+              size="small"
+              :severity="(!v$.$dirty || data.timing_valid) ? 'primary':'danger'"
+              :disabled="initialWindowIds.includes(data.id)"
+              @click="showTiming(data)"
+              v-tooltip.top="'Configure Timing'"
+          />
+        </template>
+      </Column>
+      <Column
+          key="timing_display"
+          header="Period"
+          style="width: 20%"
+      >
+        <template #body="{ data }">
+          <div
+              v-if="data['timing']['start']['label']"
+              :class="{'p-invalid': !data['timing_valid']}"
+          >
+            <strong>From: </strong>{{ data['timing']['start']['label'] }}<br>
+            <strong>To: </strong>{{ data['timing']['end']['label'] }}<br>
+              <span v-if="data['timing']['repeat_interval']
+              && data['timing']['repeat_interval']['label']">
+                <strong>Repeat:</strong> {{
+                  data['timing']['repeat_interval']['label'] }}</span>
+          </div>
+          <div v-else>
+              &lt;Not configured yet&gt;
           </div>
         </template>
-        <template #empty>
-            <p class="w-full" style="text-align: center;">
-                No Data Collection Windows have been added.
-            </p>
+      </Column>
+      <Column
+          key="label"
+          field="label"
+          header="Label"
+          style="width: 25%"
+      >
+        <template #body="slotProps">
+          <div>
+            <InputText
+              v-model="slotProps.data[slotProps.field]"
+              :class="['p-inputtext-sm', 'w-11',{'p-invalid': labelInvalid(slotProps.index)}]"
+              @change="v$.value.$reset()"
+              :disabled="initialWindowIds.includes(slotProps.data.id)"
+            >
+            </InputText>
+            <small v-if="labelInvalid(slotProps.index)"
+                   class="flex p-error mb-3">
+              {{ v$.localCollectionWindows.$each.$response.$errors[slotProps.index].label[0].$message }}
+            </small>
+          </div>
         </template>
+      </Column>
+
+      <Column
+        key="data"
+        field="data"
+        header="Clinical Data"
+        style="width: 40%"
+      >
+        <template #body="slotProps">
+
+          <Button @click="showClinicalData('labs', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded
+          :severity="(v$.$dirty && !slotProps.data[slotProps.field].valid) ? 'danger':'primary'">
+              Labs<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].labs.length }}</Badge>
+          </Button>
+          <Button @click="showClinicalData('vitals', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded :severity="(v$.$dirty && !slotProps.data[slotProps.field].valid) ? 'danger':'primary'">
+              Vitals<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].vitals.length }}</Badge>
+          </Button>
+          <Button @click="showClinicalData('outcomes', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded>
+              Outcomes<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].outcomes.length }}</Badge>
+          </Button>
+          <Button @click="showClinicalData('scores', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded>
+              Scores<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].scores.length }}</Badge>
+          </Button>
+          <small v-if="(v$.$dirty && !slotProps.data[slotProps.field].valid)"
+                 class="flex p-error mb-3">
+            {{ slotProps.data[slotProps.field].errors[0].$message }}
+
+          </small>
+        </template>
+      </Column>
+      <Column
+        key="id"
+        field="id"
+        header="Actions"
+        style="width: 10%"
+      >
+        <template #body="{ data, field }">
+          <Button
+            icon="pi pi-copy"
+            outlined
+            rounded
+            severity="success"
+            class="ml-2 p-1 small-icon"
+            size="small"
+            @click="duplicateCw(data[field])"
+            v-tooltip.top="'Duplicate Data Collection Window'"
+          />
+          <Button
+            icon="pi pi-trash"
+            outlined rounded
+            severity="danger"
+            class="ml-2 p-1 small-icon"
+            size="small"
+            @click="deleteCw(data[field])"
+            v-tooltip.top="'Delete Data Collection Window'"
+            v-if="!initialWindowIds.includes(data.id)"
+          />
+        </template>
+      </Column>
+      <template #footer>
+        <div class="text-right">
+          <Button
+            label="Add Data Collection Window"
+            icon="pi pi-plus"
+            severity="success"
+            class="mr-2"
+            @click="addNew"
+          />
+        </div>
+      </template>
+      <template #empty>
+          <p
+            class="w-full"
+            style="text-align: center;"
+          >
+            No Data Collection Windows have been added.
+          </p>
+      </template>
     </DataTable>
 
   </Panel>
 
   <TimingDialog
-      v-model:show-timing-dialog = "showTimingDialog"
-      :collection-window = "currentCollectionWindow"
-      :event-options="eventDts"
-      :rp-dates="rpDates"
-      :presets="presets.cw_presets"
-      @save-timing-update="saveTiming"
-      @cancel-timing-update="showTimingDialog = false"
-      @update:visible="showTimingDialog = false"
+    v-model:show-timing-dialog = "showTimingDialog"
+    :collection-window = "currentCollectionWindow"
+    :event-options="eventDts"
+    :rp-dates="rpDates"
+    :presets="presets.cw_presets"
+    @save-timing-update="saveTiming"
+    @cancel-timing-update="showTimingDialog = false"
+    @update:visible="showTimingDialog = false"
   />
 
   <ClinicalDataDialog
-      v-model:show-clinical-data-dialog = "showClinicalDataDialog"
-      v-model:clinical-data= "currentCollectionWindow.data"
-      v-model:aggregate-defaults= "currentCollectionWindow.aggregate_defaults"
-      :clinical-data-category = "clinicalDataCategory"
-      :timing = "currentCollectionWindow.timing"
-      :lab-options="labOptions"
-      :vital-options="vitalOptions"
-      :score-options="scoreOptions"
-      :outcome-options="outcomeOptions"
-      v-model:active-options="activeClinicalOptions"
-      v-model:closest-to-event = "currentCollectionWindow.event"
-      v-model:closest-to-time = "currentCollectionWindow.closest_time"
-      :event-options="eventDts"
-      :rp-dates="rpDates"
-      @update:visible="restoreInitialStates"
-      @save-clinical-data-update="saveUpdate"
-      @cancel-clinical-data-update="restoreInitialStates"
+    v-model:show-clinical-data-dialog = "showClinicalDataDialog"
+    v-model:clinical-data= "currentCollectionWindow.data"
+    v-model:aggregate-defaults= "currentCollectionWindow.aggregate_defaults"
+    :initial-window="getInitialWindow(currentCollectionWindow.id)"
+    :clinical-data-category = "clinicalDataCategory"
+    :timing = "currentCollectionWindow.timing"
+    :lab-options="labOptions"
+    :vital-options="vitalOptions"
+    :score-options="scoreOptions"
+    :outcome-options="outcomeOptions"
+    v-model:active-options="activeClinicalOptions"
+    v-model:closest-to-event = "currentCollectionWindow.event"
+    v-model:closest-to-time = "currentCollectionWindow.closest_time"
+    :event-options="eventDts"
+    :rp-dates="rpDates"
+    @update:visible="restoreInitialStates"
+    @save-clinical-data-update="saveUpdate"
+    @cancel-clinical-data-update="restoreInitialStates"
   />
 
   <Dialog v-model:visible="showDataCollectionInfo" modal header="Data Collection Windows" :style="{ width: '50vw' }">
@@ -205,6 +257,10 @@ const props = defineProps({
   collectionWindows: {
     type: Array as PropType<Array<CollectionWindow>>,
     required: true
+  },
+  initialWindows: {
+    type: Array as PropType<Array<CollectionWindow>>,
+    required: true
   }
 })
 
@@ -223,6 +279,13 @@ get() {
 set(value) {
   emit('update:collectionWindows', value)
 }
+});
+
+const initialWindowIds = computed(() => {
+  if (Array.isArray(props.initialWindows)) {
+    return props.initialWindows.map(window => window.id);
+  }
+  return [];
 });
 
 /*assume we are starting with no collection windows defined*/
@@ -417,8 +480,15 @@ const getRowIndex = (id:string, haystack:any[]) => {
   return haystack.findIndex(
       (cw) => cw.id === id)
 }
-</script>
 
+const getInitialWindow = (id:any) => {
+  let window = props.initialWindows.find(window => {
+    return window.id === id
+  });
+  return window;
+}
+
+</script>
 
 <style scoped>
     :deep(.p-datatable-header) {

@@ -293,7 +293,9 @@ $config_data = array(
   'redcap_project_id' => $project_id,
   'redcap_user' => $module->getUser()->getUserName(),
   'config' => $data['config'],
-  'linkinfo' => $data_arr
+  'design_config' => $data['design_config'],
+  'linkinfo' => $data_arr,
+  'is_update' => false
 );
 
 // Retrieve the data URL that is saved in the config file
@@ -315,7 +317,7 @@ if ($save_config_results === null) {
   exit();
 }
 
-/* Enable and configure REDCap to STARR Link EM on project */
+/* Enable and configure REDCap to STARR Link EM on REDCap project */
 $module->emLog("Enabling and configuring REDCap to STARR Link EM on pid $project_id.");
 
 if ($save_config_results['success'] && !empty($save_config_results['rcToStarrLinkConfig'])) {
@@ -328,15 +330,15 @@ if ($save_config_results['success'] && !empty($save_config_results['rcToStarrLin
     exit();
   }
   $rctostarr_config->configureRedcapToStarrLink($save_config_results);
-
   $module->emDebug(APP_PATH_WEBROOT_FULL . substr(APP_PATH_WEBROOT, 1) . "ProjectSetup/index.php?pid=$project_id&msg=newproject");
+  http_response_code(200);
   echo APP_PATH_WEBROOT_FULL . substr(APP_PATH_WEBROOT, 1) . "ProjectSetup/index.php?pid=$project_id&msg=newproject";
   exit();
 } else {
   $module->removeUser(USERID);
   $module->deleteRedcapProject($project_id);
   http_response_code(500);
-  $msg = $module->handleError("Duster Error: Project Create",  "Could not retrieve RtoS configuration for project_id $project_id. Error:" . $save_config_results['error']);
+  $msg = $module->handleError("DUSTER Error: Project Create",  "Could not retrieve RtoS configuration for project_id $project_id. Error:" . $save_config_results['error']);
   echo "fail_project_post";
   //  print "Error: A new REDCap project was created (pid $project_id), but DUSTER's data queries for this project failed to set up. " . $msg;
   exit();

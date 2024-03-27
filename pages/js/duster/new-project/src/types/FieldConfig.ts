@@ -3,7 +3,7 @@ import {INIT_TIMING_CONFIG} from "@/types/TimingConfig";
 import type TextValuePair from "@/types/TextValuePair";
 
 
-export interface BasicConfig{
+export interface BasicConfig {
     label: string |  undefined
     value_type?: string
     redcap_field_name?: string
@@ -13,6 +13,7 @@ export interface BasicConfig{
     duster_field_name: string | undefined
     redcap_field_note?: string
     redcap_options?: string
+    edit?: boolean
 }
 
 interface FieldConfig extends BasicConfig {
@@ -26,7 +27,7 @@ interface AggregateOptions {
 }
 
 export type AGGREGATE_OPTION = "min_agg" | "max_agg" | "first_agg" | "last_agg" | "closest_event" | "closest_time"
-export const AGGREGATE_OPTIONS: Array<TextValuePair> =[    
+export const AGGREGATE_OPTIONS: Array<TextValuePair> =[
     {text: "Min", value: "min_agg"},
     {text: "Max", value: "max_agg"},
     {text: "First", value: "first_agg"},
