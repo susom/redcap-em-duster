@@ -26,8 +26,11 @@ function getFieldParams($field, string $form_name = "", string $section_header =
     switch ($field['redcap_field_type']) {
         case 'checkbox':
         case 'radio':
-        case 'calc':
             $params .= "\"{$field['redcap_options']}\",";
+            break;
+        case 'calc':
+            $calc_param = str_replace('"','""' , $field['redcap_options']);
+            $params .= "\"$calc_param\",";
             break;
         default:
             $params .= ",";
@@ -35,7 +38,7 @@ function getFieldParams($field, string $form_name = "", string $section_header =
     }
 
     if (array_key_exists('redcap_field_note', $field) && is_string($field['redcap_field_note']) === true) {
-        $params .= "{$field['redcap_field_note']}";
+        $params .= "\"{$field['redcap_field_note']}\"";
     }
     $params .= ",";
 
