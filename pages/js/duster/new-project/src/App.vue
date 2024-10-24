@@ -534,8 +534,8 @@ const loadEditMode = () => {
   }
 
   // load data collection windows
-  initialDesign.collectionWindows = projectConfig.initial_design.collectionWindows;
-  collectionWindows.value = initialDesign.value.collectionWindows;
+  initialDesign.collectionWindows = JSON.parse(JSON.stringify(projectConfig.initial_design.collectionWindows));
+  collectionWindows.value = JSON.parse(JSON.stringify(initialDesign.value.collectionWindows));
 };
 
 const checkForRpDateChanges = () => {

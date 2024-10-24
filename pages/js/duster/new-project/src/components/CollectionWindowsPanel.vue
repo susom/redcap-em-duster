@@ -525,7 +525,7 @@ const deleteCw = (id:string) => {
 const duplicateCw = (id:string) => {
   if (localCollectionWindows.value) {
     const index = getRowIndex(id, localCollectionWindows.value)
-    const duplicate = JSON.parse(JSON.stringify(localCollectionWindows.value[index]))
+    const duplicate = JSON.parse(JSON.stringify(localCollectionWindows.value[index]));
     duplicate.id = "cw" + new Date().getTime()
     localCollectionWindows.value.push(duplicate)
   }
@@ -539,7 +539,7 @@ const getRowIndex = (id:string, haystack:any[]) => {
 
 const getInitialWindow = (id:any) => {
   let window = props.initialWindows.find(window => {
-    return window.id === id
+    return window.id === id;
   });
   return window;
 }

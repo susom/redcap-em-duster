@@ -1,13 +1,12 @@
 <script setup lang="ts">
-  import {ref, inject, computed, capitalize, watch} from "vue";
+  import {ref, inject, computed} from "vue";
   import type {ComputedRef} from "vue";
   import InputGroup from "primevue/inputgroup";
   import InputText from 'primevue/inputtext';
   import AutoComplete from 'primevue/autocomplete';
   import { AGGREGATE_OPTIONS, TEXT_AGGREGATE_OPTIONS} from "@/types/FieldConfig";
-  import {required, requiredIf, helpers, maxValue} from "@vuelidate/validators";
+  import {required, helpers} from "@vuelidate/validators";
   import { useVuelidate } from "@vuelidate/core";
-  import type TextValuePair from "@/types/TextValuePair";
 
   const labResults = inject('labResults') as ComputedRef<any>;
 
@@ -152,7 +151,7 @@
   // TODO update how this filters, not very robust/effective for end user
   const searchLabResults = (event:any) => {
     searchingLabResults.value = true;
-    const query = event.query.trim();
+    const query = event.query.trim().toLowerCase();
     //  include results that match query and also filter out results that already exist in selectedLabResults.value
     filteredLabResults.value = labResults.value.filter((result:any) => result.label.toLowerCase().includes(query)
         && !selectedLabResults.value.map((result:any) => result.label).includes(result.label));
@@ -337,7 +336,7 @@
     modal
     :header="editingLab ? 'Edit Lab' : 'Add New Lab'"
     :closable="false"
-    :style="{width:'80rem'}"
+    :style="{width:'60rem'}"
   >
     <div class="formgrid grid">
       <div>
