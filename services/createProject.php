@@ -92,6 +92,11 @@ try {
       // add vitals with its own section header
       $odm->addFields($collection_window["form_name"], null, null, "Vitals", $collection_window["data"]["vitals"]);
 
+      // add medications with its own section header
+      $medications = $collection_window["data"]["medications"];
+      $med_fields_arr = !empty($medications) ? array_merge(...array_column($medications, 'fields')) : [];
+      $odm->addFields($collection_window["form_name"], null, null, "Medications", $med_fields_arr);
+
       // add outcomes with its own section header
       $odm->addFields($collection_window["form_name"], null, null, "Outcomes", $collection_window["data"]["outcomes"]);
 

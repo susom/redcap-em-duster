@@ -120,8 +120,8 @@ $editable = $project_status === "DEV"
         postObj['check_irb_url'] = "<?php echo $module->getUrl("services/checkIRB.php"); ?>";
         // store URL for services/callMetadata.php
         postObj['metadata_url'] = "<?php echo $module->getUrl("services/callMetadata.php"); ?>";
-        // store URL for services/getLabResults.php
-        postObj['get_lab_results_url'] = "<?php echo $module->getUrl("services/getLabResults.php"); ?>";
+        // store URL for services/getCache.php
+        postObj['get_cache_url'] = "<?php echo $module->getUrl("services/getCache.php"); ?>";
         // store URL for services/getDatasetDesigns.php
         postObj['get_dataset_designs_url'] = "<?php echo $module->getUrl("services/getDatasetDesigns.php"); ?>";
         // store URL for services/refreshSession.php

@@ -210,11 +210,12 @@
             v-model:selected-options="localClinicalData.vitals"
         />
       </AccordionTab>
-        <!-- Medications
       <AccordionTab header="Medications">
-        <Medications />
+        <MedicationsOptions
+          :initialMedications="(initialData as any).medications ? (initialData as any).medications : []"
+          v-model="localClinicalData.medications"
+        />
       </AccordionTab>
-        -->
       <AccordionTab header="Outcomes">
         <ClinicalDataOptions
             category="outcomes"
@@ -268,7 +269,7 @@ import Toast from 'primevue/toast';
 import {INIT_TIMING_CONFIG} from "@/types/TimingConfig";
 import {helpers, requiredIf, minLength} from "@vuelidate/validators";
 import {useVuelidate} from "@vuelidate/core";
-import Medications from "@/components/Medications.vue";
+import MedicationsOptions from "@/components/MedicationsOptions.vue";
 
 const props = defineProps({
   showClinicalDataDialog: Boolean,
@@ -760,10 +761,8 @@ const activeClinicalOptions = computed({
 })
 
 const expandAll = () => {
-  activeClinicalOptions.value = [0,1,2,3,4];
-  //activeClinicalOptions.value = [0,1,2,3,4,5];
+  activeClinicalOptions.value = [0,1,2,3,4,5];
 }
-/****/
 
 </script>
 

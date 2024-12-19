@@ -152,7 +152,7 @@
           @click="deleteRpDate" />
     </template>
   </Dialog>
-  <Dialog v-model:visible="showRPInfoHelp" modal header="Data Collection Windows" :style="{ width: '50vw' }">
+  <Dialog v-model:visible="showRPInfoHelp" modal header="Researcher-Provided Information" :style="{ width: '50vw' }">
     <div class="my-2">
       There are identifiers and dates/datetimes for your study cohort that you will provide for your REDCap project.
       <br>

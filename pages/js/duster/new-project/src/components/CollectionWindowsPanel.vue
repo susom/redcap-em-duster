@@ -125,11 +125,16 @@
             Vitals
             <Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].vitals.length }}</Badge>
           </Button>
-          <!-- TODO Medications
-          <Button @click="showClinicalData('medications', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded :severity="(v$.$dirty && !slotProps.data[slotProps.field].valid) ? 'danger':'primary'">
-            Medications<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].vitals.length }}</Badge>
+          <Button
+              @click="showClinicalData('medications', slotProps.data)"
+              size="small"
+              class="ml-1 p-1 pr-2 pl-2"
+              rounded
+          >
+            Medications
+            <Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].medications?.length }}</Badge>
           </Button>
-          -->
+
           <Button @click="showClinicalData('outcomes', slotProps.data)" size="small" class="ml-1 p-1 pr-2 pl-2" rounded>
               Outcomes<Badge class="p-badge-no-gutter">{{ slotProps.data[slotProps.field].outcomes.length }}</Badge>
           </Button>
@@ -371,22 +376,7 @@ const showClinicalData = (category:string, cw: CollectionWindow) => {
     case 'vitals' :
       activeClinicalOptions.value.push(2);
       break;
-    case 'outcomes' :
-      activeClinicalOptions.value.push(3);
-      break;
-    case 'scores' :
-      activeClinicalOptions.value.push(4);
-    /* TODO Medications
-    case 'labs' :
-      activeClinicalOptions.value.push(0);
-      break;
-    case 'ud_labs':
-      activeClinicalOptions.value.push(1);
-      break;
-    case 'vitals' :
-      activeClinicalOptions.value.push(2);
-      break;
-    case 'medications' :
+    case 'medications':
       activeClinicalOptions.value.push(3);
       break;
     case 'outcomes' :
@@ -394,7 +384,6 @@ const showClinicalData = (category:string, cw: CollectionWindow) => {
       break;
     case 'scores' :
       activeClinicalOptions.value.push(5);
-     */
   }
   showClinicalDataDialog.value = true
 }

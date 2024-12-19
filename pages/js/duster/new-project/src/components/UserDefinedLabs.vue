@@ -228,6 +228,14 @@
 </script>
 
 <template>
+  <div class="mb-2">
+    <p>
+      You can define your own labs here. This is especially helpful if the current library of clinical variables that DUSTER provides doesn't contain a particular lab that you want.
+    </p>
+    <p>
+      Each lab may be defined by multiple lab results. Each individual lab result is a unique combination of lab name and base name. At least one lab result is required to define a lab.
+    </p>
+  </div>
   <div>
   <DataTable
       class="mb-2"
@@ -372,35 +380,71 @@
           {{ v$.selectedLabResults.$errors[0].$message }}
         </small>
 
-        <div class="mb-2">
+        <div class="formgroup-inline">
           <label
               for=label
               class="font-bold block mb-2"
           >
             Label
           </label>
-          <InputText
-              maxlength="26"
-              id="label"
-              v-model="label"
-              autocomplete="off"
-              :class="{ 'p-invalid': v$.label.$error }"
-              @blur="v$.label.$touch()"
+          <Button
+              icon="pi pi-info-circle"
+              text rounded
+              class="ml-2 pt-0 pb-0 mt-0 mb-0"
+              style="height:1.3em"
+              v-tooltip.right="{
+                value: 'This label is simply the name you want to give your user-defined lab. It does not affect the query to fetch results. The REDCap field(s) created for this lab will be based on this label. This label must be unique from other user-defined labs in the same data collection window.',
+                pt: {
+                    text: {
+                        style: {
+                            width: '400px'
+                        }
+                    }
+                }
+            }"
           />
-          <br/>
-          <small>
-            {{label?.length ? label.length : 0}}/26 characters
-          </small>
-          <small
-              v-if="v$.label.$error"
-              class="flex p-error mb-3"
-          >
-            {{ v$.label.$errors[0].$message }}
-          </small>
         </div>
 
-        <div class="mb-2">
-          <label for="notes" class="font-bold block mb-2">Notes (optional)</label>
+        <InputText
+            maxlength="26"
+            id="label"
+            v-model="label"
+            autocomplete="off"
+            :class="{ 'p-invalid': v$.label.$error }"
+            @blur="v$.label.$touch()"
+        />
+        <br/>
+        <small>
+          {{label?.length ? label.length : 0}}/26 characters
+        </small>
+        <small
+            v-if="v$.label.$error"
+            class="flex p-error mb-3"
+        >
+          {{ v$.label.$errors[0].$message }}
+        </small>
+
+        <div class="my-2">
+          <div class="formgroup-inline">
+            <label for="notes" class="font-bold block mb-2">Notes (optional)</label>
+            <Button
+                icon="pi pi-info-circle"
+                text rounded
+                class="ml-2 pt-0 pb-0 mt-0 mb-0"
+                style="height:1.3em"
+                v-tooltip.right="{
+                  value: 'Anything entered in this input field will not affect the query to fetch results. It is more of a reference for yourself and will appear as part of the REDCap field note for this lab\'s REDCap field(s). Among other things, you could use this to indicate the unit of measurement you expect for your lab\'s results.',
+                  pt: {
+                      text: {
+                          style: {
+                              width: '400px'
+                          }
+                      }
+                  }
+              }"
+            />
+          </div>
+
           <InputText
               maxlength="80"
               id="notes"
@@ -413,38 +457,76 @@
             {{notes?.length ? notes.length : 0}}/80 characters
           </small>
         </div>
+        <div class="formgroup-inline flex align-items-center">
           <p class="font-bold block mb-2">Value Type</p>
-          <div class="formgroup-inline">
-            <div
-                v-for="type in valueTypes"
-                :key="type"
-            >
-            <div class="field-radiobutton">
-              <RadioButton
-                  v-model="valueType"
-                  :inputId="type"
-                  :value="type"
-                  :class="{ 'p-invalid': v$.valueType.$error }"
-                  @change="aggSelections = [], v$.aggSelections.$reset(), minThreshold = null, maxThreshold = null"
-                  @blur="v$.valueType.$touch()"
-              />
-              <label
-                  :for="type"
-                  class="ml-2"
-              >
-                {{ type }}
-              </label>
-            </div>
-          </div>
-          <small
-              v-if="v$.valueType.$error"
-              class="flex p-error mb-3"
-          >
-            {{ v$.valueType.$errors[0].$message }}
-          </small>
+          <Button
+              icon="pi pi-info-circle"
+              text rounded
+              class="ml-2 pt-0 pb-0 mt-0 mb-0"
+              style="height:1.3em"
+              v-tooltip.right="{
+                  value: 'You can choose your lab results to either be \'numeric\' or \'text\'. If you select \'numeric\', then only lab results with numeric values will be aggregated. This means that lab results are filtered out if the result does not directly represent a number. For example, if a lab result was \'2.3 (see note)\', then that result will get filtered out. If you select \'text\', then lab results will be aggregated without filtering. For example, a lab result with a value of \'2.3 (see note)\' and a result with a value of \'2.3\' would both be included in the aggregation of a user-defined lab for \'text\' values.',
+                  pt: {
+                      text: {
+                          style: {
+                              width: '400px'
+                          }
+                      }
+                  }
+              }"
+          />
         </div>
+
+        <div class="formgroup-inline">
+          <div
+              v-for="type in valueTypes"
+              :key="type"
+          >
+          <div class="field-radiobutton">
+            <RadioButton
+                v-model="valueType"
+                :inputId="type"
+                :value="type"
+                :class="{ 'p-invalid': v$.valueType.$error }"
+                @change="aggSelections = [], v$.aggSelections.$reset(), minThreshold = null, maxThreshold = null"
+                @blur="v$.valueType.$touch()"
+            />
+            <label
+                :for="type"
+                class="ml-2"
+            >
+              {{ type }}
+            </label>
+          </div>
+        </div>
+        <small
+            v-if="v$.valueType.$error"
+            class="flex p-error mb-3"
+        >
+          {{ v$.valueType.$errors[0].$message }}
+        </small>
+        </div>
+
         <div v-if="valueType">
-          <p class="font-bold block mb-2">Aggregations</p>
+          <div class="formgroup-inline flex align-items-center">
+            <p class="font-bold block mb-2">Aggregations</p>
+            <Button
+                icon="pi pi-info-circle"
+                text rounded
+                class="ml-2 pt-0 pb-0 mt-0 mb-0"
+                style="height:1.3em"
+                v-tooltip.right="{
+                  value: 'If you select \'numeric\', then only lab results with numeric values will be aggregated. This means that lab results are filtered out if the result does not directly represent a number. For example, if a lab result was \'2.3 (see note)\', then that result will get filtered out. If you select \'text\', then lab results will be aggregated without filtering. For example, a lab result with a value of \'2.3 (see note)\' and a result with a value of \'2.3\' would both be included in the aggregation of a user-defined lab for \'text\' values.',
+                  pt: {
+                      text: {
+                          style: {
+                              width: '400px'
+                          }
+                      }
+                  }
+              }"
+            />
+          </div>
           <!--
           <div
             class="flex align-items-center gap-3 mb-2"
@@ -515,7 +597,27 @@
             class="mb-4"
             v-if="valueType==='numeric'"
         >
-          <p class="font-bold block mb-2">Thresholds (optional)</p>
+          <div>
+            <div class="flex align-items-center formgroup-inline">
+              <p class="flex align-items-center font-bold block mb-2">Thresholds (optional)</p>
+                <Button
+                    icon="pi pi-info-circle"
+                    text rounded
+                    class="flex align-items-center ml-2 pt-0 pb-0 mt-0 mb-0"
+                    style="height:1.3em"
+                    v-tooltip.right="{
+                      value: 'These are optional parameters that can be used to establish cutoff values for numeric lab results (minimum threshold <= lab result value <= maximum threshold).',
+                      pt: {
+                          text: {
+                              style: {
+                                  width: '400px'
+                              }
+                          }
+                      }
+                  }"
+                />
+            </div>
+          </div>
           <div class="flex align-items-center gap-3 mb-2">
             <label
                 for="min-threshold"

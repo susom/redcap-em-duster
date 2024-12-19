@@ -46,8 +46,8 @@ namespace Stanford\Duster;
   postObj['check_irb_url'] = "<?php echo $module->getUrl("services/checkIRB.php"); ?>";
   postObj['redcap_user'] = "<?php echo $module->getUser()->getUserName(); ?>";
 
-  // store URL for services/getLabResults.php
-  postObj['get_lab_results_url'] = "<?php echo $module->getUrl("services/getLabResults.php"); ?>";
+  // store URL for services/getCache.php
+  postObj['get_cache_url'] = "<?php echo $module->getUrl("services/getCache.php"); ?>";
 
   // store URL for services/saveDatasetDesign.php
   postObj['save_dataset_design_url'] = "<?php echo $module->getUrl("services/saveDatasetDesign.php"); ?>";

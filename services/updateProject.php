@@ -224,6 +224,16 @@ try {
                 }
             }
 
+            // Medications
+            $medications = $collection_window['data']['medications'];
+            if (!empty($medications)) {
+                $medications_fields = array_merge(...array_column($medications, 'fields'));
+                $num_fields = count($medications_fields);
+                $medications_form_name_arr = array_fill(0, $num_fields, $form_name);
+                $medications_section_header_arr = array_merge(['Medications'], array_fill(0, $num_fields - 1, ''));
+                $cw = array_merge($cw, array_map($get_field_params, $medications_fields, $medications_form_name_arr, $medications_section_header_arr));
+            }
+
             // Outcomes
             $outcomes = $collection_window['data']['outcomes'];
             if (!empty($outcomes)) {

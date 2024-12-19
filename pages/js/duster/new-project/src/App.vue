@@ -162,6 +162,7 @@ import DemographicsPanel from '@/components/DemographicsPanel.vue';
 import CollectionWindowsPanel from '@/components/CollectionWindowsPanel.vue';
 import ReviewPanel from '@/components/ReviewPanel.vue';
 
+
 // for testing
 import resp from './dusterTestMetadata.json';
 import labResultsDev from './lab_results.json'; // TODO delete this line
@@ -226,9 +227,16 @@ const clinicalDateOptions = ref<FieldMetadata[]>([]);
 
 const labResults = ref();
 const labResultsMetadata = computed<any>(() => {
-  return labResults.value.results;
+  // return labResults.value.results;
+  return labResults.value;
 });
 provide('labResults', labResultsMetadata);
+
+const medicationsCache = ref();
+const medicationsMetadata = computed<any>(() => {
+  return medicationsCache.value;
+});
+provide('medicationsMetadata', medicationsMetadata);
 
 const metadataArr = computed<Array<FieldMetadata>>(() => {
   let arr:FieldMetadata[] = [];
@@ -478,10 +486,12 @@ const getDusterMetadata = (metadataUrl:string) => {
         outcomeOptions.value = response.data.outcomes;
         scoreOptions.value = response.data.scores;
         clinicalDateOptions.value = response.data.clinical_dates;
-        // get lab results metadata
-        axios.get(projectConfig.get_lab_results_url)
+
+        // get STARR cache
+        axios.get(projectConfig.get_cache_url)
             .then(function (response) {
-              labResults.value = response.data;
+              labResults.value = response.data.labs;
+              medicationsCache.value = response.data.medications;
               irbCheckVisible.value = false;
 
               //  fetch dataset designs
@@ -514,9 +524,10 @@ const getDusterMetadata = (metadataUrl:string) => {
 const loadEditMode = () => {
 
   // add an empty array for missing user-defined labs to each data collection window
-  // retroactive support for user-defined labs feature for older projects
+  // retroactive support for user-defined labs and medications features for older projects
   projectConfig.initial_design.collectionWindows.forEach((cw: any) => {
     cw.data.ud_labs = cw.data.ud_labs ? cw.data.ud_labs : [];
+    cw.data.medications = cw.data.medications ? cw.data.medications : [];
   });
 
   initialDesign.value = projectConfig.initial_design;

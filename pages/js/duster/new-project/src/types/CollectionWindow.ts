@@ -22,6 +22,7 @@ interface CollectionWindow {
         labs: Array<FieldMetadata>
         ud_labs: Array<FieldMetadata>
         vitals: Array<FieldMetadata>
+        medications: Array<FieldMetadata>
         outcomes: Array<FieldMetadata>
         scores: Array<FieldMetadata>
         valid?: boolean
@@ -49,6 +50,7 @@ export const INIT_COLLECTION_WINDOW: CollectionWindow = {
         labs:[],
         ud_labs:[],
         vitals:[],
+        medications:[],
         outcomes:[],
         scores:[],
         valid: false

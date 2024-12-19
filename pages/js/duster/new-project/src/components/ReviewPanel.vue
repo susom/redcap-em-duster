@@ -126,6 +126,30 @@
     <Column field="redcap_field_note" header="REDCap Field Note"></Column>
   </DataTable>
 
+  <DataTable
+      :value="getMedFields(cw.data.medications)"
+      class="mt-2"
+      tableStyle="min-width: 50rem"
+      v-if="cw.data.medications.length > 0"
+  >
+    <template #header>
+      <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+        <span class="text-0 text-900 font-bold">Medications</span>
+      </div>
+    </template>
+    <Column field="label" header="Label"></Column>
+    <Column field="redcap_field_name" header="REDCap Field Name"></Column>
+    <Column field="redcap_field_type" header="REDCap Field Type"></Column>
+    <Column
+        field="redcap_field_note"
+        header="REDCap Field Note"
+    >
+      <template #body="rowData">
+        <div v-html="rowData.data.redcap_field_note"></div>
+      </template>
+    </Column>
+  </DataTable>
+
   <DataTable :value="cw.data.outcomes" class="mt-2"
              tableStyle="min-width: 50rem"
              v-if="cw.data.outcomes.length > 0">
@@ -519,6 +543,7 @@ const getData = (data:any, index:number, aggDefaults?: TextValuePair[], event?:T
   dconfig.labs = getConfigWithAggregates(data.labs, index, aggDefaults, event, closestTime)
   dconfig.ud_labs = getUdLabsWithAggregates(data.ud_labs, index, event, closestTime)
   dconfig.vitals = getConfigWithAggregates(data.vitals, index, aggDefaults, event, closestTime)
+  dconfig.medications = getMedications(data.medications, index);
   dconfig.outcomes = getConfigNoAggregates(data.outcomes, index)
   dconfig.scores = getScoresConfig(data.scores, index)
   return dconfig
@@ -589,96 +614,79 @@ const getUdLabsWithAggregates = (data:any[],
     configArray.push(config);
   }
 
-  /*
-  for (let field of data) {
-    for (let agg of field.aggregation_options) {
-      //let aggName = agg['value'].replace('_agg','');
-      let aggName = agg.replace('_agg','');
-
-      // convert label for use with aggregate name
-      const fieldName = field.label.trim().toLowerCase()
-          .replace(/ +/g, '_') // replace spaces with underscore
-          .replace(/[^a-z_0-9]/g, '') // remove illegal characters
-          .replace(/[_+]/g, '_') // replace multiple _ with a single one
-          .replace(/_$/g, ''); // remove trailing _
-
-      // REDCap field note includes the optional notes and optional minimum/maximum thresholds
-      let fieldNote = field.notes;
-      if (typeof field.min_threshold === 'number') {
-        fieldNote += '<br>Minimum Threshold: ' + field.min_threshold;
-      }
-      if (typeof field.max_threshold === 'number') {
-        fieldNote += '<br>Maximum Threshold: ' + field.max_threshold;
-      }
-
-      let config:any = {
-        //label: getAggregateLabel(field.label, agg.value, evt, closestTime),
-        label: getAggregateLabel(field.label, agg, evt, closestTime),
-        redcap_field_name: 'ud_' + fieldName + "_" + aggName + "_" + index,
-        value_type: field.value_type,
-        redcap_field_type: "text",
-        redcap_field_note: fieldNote,
-        //aggregate: agg.value,
-        aggregate: agg,
-        lab_results: field.lab_results,
-        min_threshold: field.min_threshold,
-        max_threshold: field.max_threshold
-      };
-      //if (agg.value == 'closest_event' && event) {
-      if (agg == 'closest_event' && event) {
-        config.aggregate_options = {}
-        config.aggregate_options.event = event[0].redcap_field_name
-      }
-      //if (agg.value == 'closest_time') {
-      if (agg == 'closest_time') {
-        config.aggregate_options = {}
-        config.aggregate_options.time = closestTime
-      }
-      configArray.push(config)
-
-    }
-  }
-  */
-  //console.log(configArray);
   return configArray;
 }
 
 // TODO refactor
 const getUdFields = (ud_labs:any[]) => {
-  /*
-  let udFields:any[] = [];
-  ud_labs.forEach((udLab) => {
-    console.log("udLab");
-    console.log(udLab);
-    let udLabFields = udLab.fields;
-    udFields.concat(udLab.fields);
-    console.log("udLabFields");
-    console.log(udLabFields);
-  });
-  console.log(udFields);
-
-  const testArr = ud_labs.map((udLab) => {
-    return udLab.fields;
-  });
-  console.log("testArr");
-  console.log(testArr);
-   */
-
   const testArr = ud_labs.map(udLab => udLab.fields);
   let finalArr:any[] = [];
   for (let arr of testArr) {
     finalArr = finalArr.concat(arr);
   }
-  /*
-  console.log("testArr");
-  console.log(testArr);
-  console.log("finalArr");
-  console.log(finalArr);
-  */
   return finalArr;
 
   // return ud_labs.flatMap(udLab => udLab.fields);
   // return ud_labs.map(udLab => udLab.fields).flat();
+}
+
+const getMedFields = (medications:any[]) => {
+  let medFields:any[] = [];
+  for (let medication of medications) {
+    medFields = medFields.concat(medication.fields);
+  }
+  return medFields;
+  //return medications.flatMap(medication => medication.fields);
+}
+
+const getMedications = (medications:any[], index:number) => {
+  console.log(medications);
+  let configArray = [];
+
+  for (let medication of medications) {
+    // convert label for use with aggregate name
+    const fieldName = medication.label.trim().toLowerCase()
+        .replace(/ +/g, '_') // replace spaces with underscore
+        .replace(/[^a-z_0-9]/g, '') // remove illegal characters
+        .replace(/[_+]/g, '_') // replace multiple _ with a single one
+        .replace(/_$/g, ''); // remove trailing _
+
+    // REDCap field note includes optional notes, medication descriptions
+    let fieldNoteArr = [];
+    if (medication.notes && medication.notes.trim() !== '') {
+      fieldNoteArr.push(medication.notes);
+    }
+    //let fieldNote = medication.notes && medication.notes.trim() !== '' ? medication.notes + '<br><br>': '';
+    if (medication.pharmacologics.length > 0) {
+      const pharmacologicsArr = medication.pharmacologics.map((pharmacologic: { value: any; }) => pharmacologic.value);
+      fieldNoteArr.push('Pharmacologics:<br>' + pharmacologicsArr.join('<br>'));
+    }
+    if (medication.therapeutics.length > 0) {
+      const therapeuticsArr = medication.therapeutics.map((therapeutic: { value: any; }) => therapeutic.value);
+      fieldNoteArr.push('Therapeutics:<br>' + therapeuticsArr.join('<br>'));
+    }
+
+    configArray.push({
+      label: medication.label,
+      definition: {
+        pharmacologics: medication.pharmacologics,
+        therapeutics: medication.therapeutics
+      },
+      fields: [
+        {
+          label: medication.label,
+          redcap_field_name:'med_' + fieldName + '_ordered_yn_' + index,
+          redcap_field_type: "yesno",
+          redcap_options: "",
+          value_type: "",
+          redcap_field_note: fieldNoteArr.join('<br><br>'),
+          type: "ordered"
+        }
+      ]
+    });
+  }
+
+  return configArray;
 }
 
 const getConfigWithAggregates = (data:FieldMetadata[],
